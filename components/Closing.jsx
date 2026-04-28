@@ -58,6 +58,8 @@ const Testimonials = () => {
   );
 };
 
+const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
 const Contact = () => {
   const [step, setStep] = React.useState(0);
   const [data, setData] = React.useState({ name: "", email: "", what: "" });
@@ -131,6 +133,9 @@ const Contact = () => {
                   <label className="field">
                     <span>Email</span>
                     <input value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="jane@yourstartup.com" type="email" />
+                    {data.email && !isValidEmail(data.email) && (
+                      <span style={{ fontSize: "12px", color: "#EF4444", marginTop: "4px" }}>Please enter a valid email address.</span>
+                    )}
                   </label>
                 </div>
               )}
@@ -163,7 +168,7 @@ const Contact = () => {
               <div className="contact-actions">
                 {step > 0 && <button className="btn-ghost" onClick={prev}>Back</button>}
                 {step < 2 && (
-                  <button className="btn-primary" onClick={next} disabled={step === 0 ? !data.name || !data.email : !data.what}>
+                  <button className="btn-primary" onClick={next} disabled={step === 0 ? !data.name || !isValidEmail(data.email) : !data.what}>
                     Continue
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M3 8h10m0 0L9 4m4 4l-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />

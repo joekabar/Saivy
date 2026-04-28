@@ -170,11 +170,13 @@ const ScoreRing = ({ label, value, color }) => {
 // --- RivalRadar demo ---
 const RivalRadar = () => {
   const [selected, setSelected] = React.useState(0);
+  const [flash, setFlash] = React.useState("");
+  const sevLabel = { high: "hoog", med: "med", low: "laag" };
   const competitors = [
     {
       name: "concurrent-a.nl",
       lastChange: "2u geleden",
-      severity: "hoog",
+      severity: "high",
       shift: "Hero veranderd van 'AI-assistent' → 'Autonome AI-werkkracht'",
       detail: "Ze hebben de consumentenfocus laten vallen. Nieuwe prijscategorie van €499/mnd voor agencies. Drie nieuwe logo's bij social proof: Notion, Vercel, Linear.",
     },
@@ -188,11 +190,23 @@ const RivalRadar = () => {
     {
       name: "challenger-c.ai",
       lastChange: "4d geleden",
-      severity: "laag",
+      severity: "low",
       shift: "Homepage-tekst opgefrist; structuur ongewijzigd",
       detail: "Cosmetisch. Nieuwe testimonials maar geen positiewijziging. Hou in de gaten.",
     },
   ];
+
+  const addCompetitor = () => {
+    setFlash("add");
+    setTimeout(() => setFlash(""), 1500);
+  };
+
+  const exportBrief = () => {
+    const text = competitors.map(c => `${c.name} (${sevLabel[c.severity]}): ${c.shift}`).join('\n');
+    try { navigator.clipboard.writeText(text); } catch (e) { /* silent */ }
+    setFlash("export");
+    setTimeout(() => setFlash(""), 1500);
+  };
 
   return (
     <div className="demo-shell">
@@ -201,8 +215,12 @@ const RivalRadar = () => {
           <span className="pulse-dot" /> Volgt <b>3 concurrenten</b> · laatste check <b>14 min geleden</b>
         </div>
         <div className="rr-actions">
-          <button className="btn-ghost-sm">+ Voeg concurrent toe</button>
-          <button className="btn-ghost-sm">Exporteer briefing</button>
+          <button className="btn-ghost-sm" onClick={addCompetitor}>
+            {flash === "add" ? "✓ Toegevoegd" : "+ Voeg concurrent toe"}
+          </button>
+          <button className="btn-ghost-sm" onClick={exportBrief}>
+            {flash === "export" ? "✓ Gekopieerd" : "Exporteer briefing"}
+          </button>
         </div>
       </div>
 
@@ -216,7 +234,7 @@ const RivalRadar = () => {
             >
               <div className="rr-row-top">
                 <span className="rr-name">{c.name}</span>
-                <span className={`rr-sev rr-sev-${c.severity === "hoog" ? "high" : c.severity === "med" ? "med" : "low"}`}>{c.severity}</span>
+                <span className={`rr-sev rr-sev-${c.severity}`}>{sevLabel[c.severity]}</span>
               </div>
               <div className="rr-shift">{c.shift}</div>
               <div className="rr-time">{c.lastChange}</div>
@@ -227,8 +245,8 @@ const RivalRadar = () => {
         <div className="rr-detail">
           <div className="rr-detail-head">
             <h4>{competitors[selected].name}</h4>
-            <span className={`rr-sev rr-sev-${competitors[selected].severity === "hoog" ? "high" : competitors[selected].severity === "med" ? "med" : "low"}`}>
-              {competitors[selected].severity} prioriteit
+            <span className={`rr-sev rr-sev-${competitors[selected].severity}`}>
+              {sevLabel[competitors[selected].severity]} prioriteit
             </span>
           </div>
           <div className="rr-shift-big">{competitors[selected].shift}</div>
@@ -257,6 +275,8 @@ const ReviewLoop = () => {
   const [stars, setStars] = React.useState(2);
   const [typing, setTyping] = React.useState(false);
   const [reply, setReply] = React.useState("");
+  const [posted, setPosted] = React.useState(false);
+  const [seed, setSeed] = React.useState(0);
 
   const review = stars >= 4
     ? "Eerlijk, de beste pizza in de buurt. Snelle bediening en het personeel was zo vriendelijk. We komen zeker terug!"
@@ -291,7 +311,7 @@ const ReviewLoop = () => {
       }
     }, 14);
     return () => clearInterval(id);
-  }, [tone, stars]);
+  }, [tone, stars, seed]);
 
   const toneLabels = { warm: "warm", professional: "zakelijk" };
 
@@ -357,8 +377,12 @@ const ReviewLoop = () => {
           <p className="rl-text">{reply}{typing && <span className="cursor">▋</span>}</p>
           {!typing && (
             <div className="rl-actions">
-              <button className="btn-primary-sm">Goedkeuren & plaatsen</button>
-              <button className="btn-ghost-sm">Opnieuw</button>
+              <button className="btn-primary-sm" onClick={() => { setPosted(true); setTimeout(() => setPosted(false), 2000); }}>
+                {posted ? "✓ Geplaatst" : "Goedkeuren & plaatsen"}
+              </button>
+              <button className="btn-ghost-sm" onClick={() => { setPosted(false); setSeed((s) => s + 1); }}>
+                Opnieuw
+              </button>
             </div>
           )}
         </div>
@@ -370,6 +394,16 @@ const ReviewLoop = () => {
 // --- Inbox Assist demo ---
 const InboxAgent = () => {
   const [selected, setSelected] = React.useState(0);
+  const [draftSent, setDraftSent] = React.useState(false);
+  const [editingDraft, setEditingDraft] = React.useState(false);
+  const [editedText, setEditedText] = React.useState("");
+
+  React.useEffect(() => {
+    setDraftSent(false);
+    setEditingDraft(false);
+    setEditedText("");
+  }, [selected]);
+
   const emails = [
     {
       from: "Priya Shah",
@@ -456,12 +490,30 @@ const InboxAgent = () => {
 
           {e.drafted && (
             <div className="ia-draft">
-              <div className="ia-draft-label">Opgesteld antwoord — klaar voor review door je team</div>
-              <pre className="ia-draft-body">{e.drafted}</pre>
-              <div className="ia-draft-actions">
-                <button className="btn-primary-sm">Versturen</button>
-                <button className="btn-ghost-sm">Bewerken</button>
+              <div className="ia-draft-label">
+                {draftSent ? "Antwoord verzonden" : "Opgesteld antwoord — klaar voor review door je team"}
               </div>
+              {editingDraft
+                ? <textarea
+                    className="ia-draft-body"
+                    value={editedText}
+                    onChange={(ev) => setEditedText(ev.target.value)}
+                    rows={6}
+                    style={{ width: "100%", resize: "vertical", fontFamily: "inherit", fontSize: "inherit", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "6px", padding: "10px", color: "inherit", boxSizing: "border-box" }}
+                  />
+                : <pre className="ia-draft-body">{draftSent ? "✓ Verzonden." : (editedText || e.drafted)}</pre>
+              }
+              {!draftSent && (
+                <div className="ia-draft-actions">
+                  <button className="btn-primary-sm" onClick={() => { setDraftSent(true); setEditingDraft(false); }}>
+                    {editingDraft ? "Bewerkt antwoord versturen" : "Versturen"}
+                  </button>
+                  {editingDraft
+                    ? <button className="btn-ghost-sm" onClick={() => setEditingDraft(false)}>Annuleren</button>
+                    : <button className="btn-ghost-sm" onClick={() => { setEditingDraft(true); setEditedText(e.drafted); }}>Bewerken</button>
+                  }
+                </div>
+              )}
             </div>
           )}
         </div>

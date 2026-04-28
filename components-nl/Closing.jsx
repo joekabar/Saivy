@@ -9,11 +9,11 @@ const Testimonials = () => {
       metricLbl: "+ €1.300/mnd bespaard",
     },
     {
-      quote: "Ze bouwden een interne tool die drie context-switches per dag van mijn engineers wegnam. De moraalboost was eerlijk gezegd de grootste winst — maar de €1,1k/mnd die we niet meer aan SaaS uitgeven hielp ook.",
+      quote: "Ze bouwden een interne tool die drie context-switches per dag van mijn engineers wegnam. De moraalboost was eerlijk gezegd de grootste winst — maar de €1.100/mnd die we niet meer aan SaaS uitgeven hielp ook.",
       name: "Marcus Chen",
       role: "Oprichter, Stackbench (8 mensen)",
       metric: "−3 tabs",
-      metricLbl: "+ €1,1k/mnd bespaard",
+      metricLbl: "+ €1.100/mnd bespaard",
     },
     {
       quote: "Mijn team haat maandagen niet meer. Het wekelijkse concurrentie-overzicht ploft samengevat in Slack — niemand stelt het meer handmatig op. We bespaarden een hele FTE die we wilden aannemen om bij te houden.",
@@ -57,6 +57,8 @@ const Testimonials = () => {
     </section>
   );
 };
+
+const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 const Contact = () => {
   const [step, setStep] = React.useState(0);
@@ -131,6 +133,9 @@ const Contact = () => {
                   <label className="field">
                     <span>E-mail</span>
                     <input value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="jan@jouwbedrijf.nl" type="email" />
+                    {data.email && !isValidEmail(data.email) && (
+                      <span style={{ fontSize: "12px", color: "#EF4444", marginTop: "4px" }}>Vul een geldig e-mailadres in.</span>
+                    )}
                   </label>
                 </div>
               )}
@@ -163,7 +168,7 @@ const Contact = () => {
               <div className="contact-actions">
                 {step > 0 && <button className="btn-ghost" onClick={prev}>Terug</button>}
                 {step < 2 && (
-                  <button className="btn-primary" onClick={next} disabled={step === 0 ? !data.name || !data.email : !data.what}>
+                  <button className="btn-primary" onClick={next} disabled={step === 0 ? !data.name || !isValidEmail(data.email) : !data.what}>
                     Verder
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M3 8h10m0 0L9 4m4 4l-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />

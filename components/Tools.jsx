@@ -170,6 +170,7 @@ const ScoreRing = ({ label, value, color }) => {
 // --- RivalRadar demo ---
 const RivalRadar = () => {
   const [selected, setSelected] = React.useState(0);
+  const [flash, setFlash] = React.useState("");
   const competitors = [
     {
       name: "competitor-a.com",
@@ -194,6 +195,18 @@ const RivalRadar = () => {
     },
   ];
 
+  const addCompetitor = () => {
+    setFlash("add");
+    setTimeout(() => setFlash(""), 1500);
+  };
+
+  const exportBrief = () => {
+    const text = competitors.map(c => `${c.name} (${c.severity}): ${c.shift}`).join('\n');
+    try { navigator.clipboard.writeText(text); } catch (e) { /* silent */ }
+    setFlash("export");
+    setTimeout(() => setFlash(""), 1500);
+  };
+
   return (
     <div className="demo-shell">
       <div className="rr-head">
@@ -201,8 +214,12 @@ const RivalRadar = () => {
           <span className="pulse-dot" /> Watching <b>3 competitors</b> · last sweep <b>14 min ago</b>
         </div>
         <div className="rr-actions">
-          <button className="btn-ghost-sm">+ Add competitor</button>
-          <button className="btn-ghost-sm">Export brief</button>
+          <button className="btn-ghost-sm" onClick={addCompetitor}>
+            {flash === "add" ? "✓ Added" : "+ Add competitor"}
+          </button>
+          <button className="btn-ghost-sm" onClick={exportBrief}>
+            {flash === "export" ? "✓ Copied" : "Export brief"}
+          </button>
         </div>
       </div>
 
@@ -257,6 +274,8 @@ const ReviewLoop = () => {
   const [stars, setStars] = React.useState(2);
   const [typing, setTyping] = React.useState(false);
   const [reply, setReply] = React.useState("");
+  const [posted, setPosted] = React.useState(false);
+  const [seed, setSeed] = React.useState(0);
 
   const review = stars >= 4
     ? "Honestly the best pizza in the neighborhood. Service was quick and the staff was so friendly. Will be back!"
@@ -291,7 +310,7 @@ const ReviewLoop = () => {
       }
     }, 14);
     return () => clearInterval(id);
-  }, [tone, stars]);
+  }, [tone, stars, seed]);
 
   return (
     <div className="demo-shell">
@@ -355,8 +374,12 @@ const ReviewLoop = () => {
           <p className="rl-text">{reply}{typing && <span className="cursor">▋</span>}</p>
           {!typing && (
             <div className="rl-actions">
-              <button className="btn-primary-sm">Approve & post</button>
-              <button className="btn-ghost-sm">Regenerate</button>
+              <button className="btn-primary-sm" onClick={() => { setPosted(true); setTimeout(() => setPosted(false), 2000); }}>
+                {posted ? "✓ Posted" : "Approve & post"}
+              </button>
+              <button className="btn-ghost-sm" onClick={() => { setPosted(false); setSeed((s) => s + 1); }}>
+                Regenerate
+              </button>
             </div>
           )}
         </div>
@@ -368,6 +391,16 @@ const ReviewLoop = () => {
 // --- Inbox Assist demo ---
 const InboxAgent = () => {
   const [selected, setSelected] = React.useState(0);
+  const [draftSent, setDraftSent] = React.useState(false);
+  const [editingDraft, setEditingDraft] = React.useState(false);
+  const [editedText, setEditedText] = React.useState("");
+
+  React.useEffect(() => {
+    setDraftSent(false);
+    setEditingDraft(false);
+    setEditedText("");
+  }, [selected]);
+
   const emails = [
     {
       from: "Priya Shah",
@@ -454,12 +487,30 @@ const InboxAgent = () => {
 
           {e.drafted && (
             <div className="ia-draft">
-              <div className="ia-draft-label">Drafted reply — ready for your team to review</div>
-              <pre className="ia-draft-body">{e.drafted}</pre>
-              <div className="ia-draft-actions">
-                <button className="btn-primary-sm">Send</button>
-                <button className="btn-ghost-sm">Edit</button>
+              <div className="ia-draft-label">
+                {draftSent ? "Reply sent" : "Drafted reply — ready for your team to review"}
               </div>
+              {editingDraft
+                ? <textarea
+                    className="ia-draft-body"
+                    value={editedText}
+                    onChange={(ev) => setEditedText(ev.target.value)}
+                    rows={6}
+                    style={{ width: "100%", resize: "vertical", fontFamily: "inherit", fontSize: "inherit", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "6px", padding: "10px", color: "inherit", boxSizing: "border-box" }}
+                  />
+                : <pre className="ia-draft-body">{draftSent ? "✓ Sent." : (editedText || e.drafted)}</pre>
+              }
+              {!draftSent && (
+                <div className="ia-draft-actions">
+                  <button className="btn-primary-sm" onClick={() => { setDraftSent(true); setEditingDraft(false); }}>
+                    {editingDraft ? "Send edited reply" : "Send"}
+                  </button>
+                  {editingDraft
+                    ? <button className="btn-ghost-sm" onClick={() => setEditingDraft(false)}>Cancel</button>
+                    : <button className="btn-ghost-sm" onClick={() => { setEditingDraft(true); setEditedText(e.drafted); }}>Edit</button>
+                  }
+                </div>
+              )}
             </div>
           )}
         </div>

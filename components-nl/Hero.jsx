@@ -1,6 +1,5 @@
 // Hero section voor SAIVY (NL)
-const Hero = ({ tweaks }) => {
-  const [count, setCount] = React.useState(0);
+const Hero = () => {
   const [savings, setSavings] = React.useState(0);
 
   React.useEffect(() => {
@@ -9,7 +8,6 @@ const Hero = ({ tweaks }) => {
     const tick = (t) => {
       const p = Math.min(1, (t - start) / 1800);
       const ease = 1 - Math.pow(1 - p, 3);
-      setCount(Math.floor(ease * 247));
       setSavings(Math.floor(ease * 84));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
