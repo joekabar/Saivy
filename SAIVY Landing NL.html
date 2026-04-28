@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SAIVY — Haal de druk van je team.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<template id="__bundler_thumbnail" data-bg-color="#07090F">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#4DA8FF" />
+        <stop offset="1" stop-color="#0066FF" />
+      </linearGradient>
+    </defs>
+    <g transform="translate(600 400)">
+      <path d="M0 -180 L156 -90 L156 90 L0 180 L-156 90 L-156 -90 Z" fill="none" stroke="url(#g)" stroke-width="14" />
+      <path d="M-60 -45 L0 -80 L60 -45 L60 35 L0 70 L-60 35 Z" fill="url(#g)" opacity="0.9" />
+    </g>
+    <text x="600" y="640" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="600" fill="#E8ECF5" letter-spacing="8">SAIVY</text>
+  </svg>
+</template>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="components-nl/Hero.jsx"></script>
+<script type="text/babel" src="components-nl/Services.jsx"></script>
+<script type="text/babel" src="components-nl/Tools.jsx"></script>
+<script type="text/babel" src="components-nl/Closing.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "blue",
+  "density": "spacious"
+}/*EDITMODE-END*/;
+
+const accentMap = {
+  blue:    { brand: "#4DA8FF", brand2: "#0066FF", brand3: "#1E3A8A" },
+  violet:  { brand: "#A78BFA", brand2: "#7C3AED", brand3: "#4C1D95" },
+  cyan:    { brand: "#22D3EE", brand2: "#0891B2", brand3: "#155E75" },
+  emerald: { brand: "#34D399", brand2: "#059669", brand3: "#064E3B" },
+};
+
+const App = () => {
+  const [tweaks, setTweak] = window.useTweaks
+    ? window.useTweaks(TWEAK_DEFAULTS)
+    : [TWEAK_DEFAULTS, () => {}];
+
+  React.useEffect(() => {
+    const a = accentMap[tweaks.accent] || accentMap.blue;
+    const r = document.documentElement;
+    r.style.setProperty("--brand", a.brand);
+    r.style.setProperty("--brand-2", a.brand2);
+    r.style.setProperty("--brand-3", a.brand3);
+  }, [tweaks.accent]);
+
+  React.useEffect(() => {
+    document.body.dataset.density = tweaks.density;
+  }, [tweaks.density]);
+
+  const TP = window.TweaksPanel;
+  const TS = window.TweakSection;
+  const TR = window.TweakRadio;
+
+  return (
+    <>
+      <window.Hero tweaks={tweaks} />
+      <window.Services />
+      <window.Tools />
+      <window.Testimonials />
+      <window.Contact />
+
+      {TP && (
+        <TP title="Tweaks">
+          <TS label="Accent color" />
+          <TR
+            label="Accent"
+            value={tweaks.accent}
+            onChange={(v) => setTweak("accent", v)}
+            options={[
+              { value: "blue", label: "Blue" },
+              { value: "violet", label: "Violet" },
+              { value: "cyan", label: "Cyan" },
+              { value: "emerald", label: "Emerald" },
+            ]}
+          />
+          <TS label="Layout" />
+          <TR
+            label="Density"
+            value={tweaks.density}
+            onChange={(v) => setTweak("density", v)}
+            options={[
+              { value: "compact", label: "Compact" },
+              { value: "spacious", label: "Spacious" },
+            ]}
+          />
+        </TP>
+      )}
+    </>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
